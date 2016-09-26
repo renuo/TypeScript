@@ -95,7 +95,7 @@ namespace ts.JsTyping {
 
         // Remove typings that the user has added to the exclude list
         for (const excludeTypingName of exclude) {
-            delete inferredTypings[excludeTypingName];
+            _delete(inferredTypings, excludeTypingName);
         }
 
         const newTypingNames: string[] = [];

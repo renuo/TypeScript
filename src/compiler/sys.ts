@@ -246,18 +246,18 @@ namespace ts {
 
                 function reduceDirWatcherRefCountForFile(fileName: string) {
                     const dirName = getDirectoryPath(fileName);
-                    const watcher = dirWatchers[dirName];
+                    const watcher = _get(dirWatchers, dirName);
                     if (watcher) {
                         watcher.referenceCount -= 1;
                         if (watcher.referenceCount <= 0) {
                             watcher.close();
-                            delete dirWatchers[dirName];
+                            _delete(dirWatchers, dirName);
                         }
                     }
                 }
 
                 function addDirWatcher(dirPath: string): void {
-                    let watcher = dirWatchers[dirPath];
+                    let watcher = _get(dirWatchers, dirPath);
                     if (watcher) {
                         watcher.referenceCount += 1;
                         return;
@@ -268,7 +268,7 @@ namespace ts {
                         (eventName: string, relativeFileName: string) => fileEventHandler(eventName, relativeFileName, dirPath)
                     );
                     watcher.referenceCount = 1;
-                    dirWatchers[dirPath] = watcher;
+                    _set(dirWatchers, dirPath, watcher);
                     return;
                 }
 

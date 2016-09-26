@@ -371,7 +371,7 @@ namespace ts.server {
                     const response = <protocol.Response>msg;
                     if (response.request_seq in this.callbacks) {
                         this.callbacks[response.request_seq](response);
-                        delete this.callbacks[response.request_seq];
+                        _deleteWakka(this.callbacks, response.request_seq);
                     }
                 }
                 else if (msg.type === "event") {

@@ -1,13 +1,4 @@
 namespace ts {
-
-    export interface MapLike<T> {
-        [index: string]: T;
-    }
-
-    export interface Map<T> extends MapLike<T> {
-        __mapBrand: any;
-    }
-
     // branded string type used to store absolute, normalized and canonicalized paths
     // arbitrary file name can be converted to Path via toPath function
     export type Path = string & { __pathBrand: any };

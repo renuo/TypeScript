@@ -1261,7 +1261,7 @@ namespace ts {
             for (const key in wildcardDirectories) {
                 for (const recursiveKey of recursiveKeys) {
                     if (key !== recursiveKey && containsPath(recursiveKey, key, path, !useCaseSensitiveFileNames)) {
-                        delete wildcardDirectories[key];
+                        _delete(wildcardDirectories, key);
                     }
                 }
             }
@@ -1306,7 +1306,7 @@ namespace ts {
         for (let i = nextExtensionPriority; i < extensions.length; i++) {
             const lowerPriorityExtension = extensions[i];
             const lowerPriorityPath = keyMapper(changeExtension(file, lowerPriorityExtension));
-            delete wildcardFiles[lowerPriorityPath];
+            _delete(wildcardFiles, lowerPriorityPath);
         }
     }
 

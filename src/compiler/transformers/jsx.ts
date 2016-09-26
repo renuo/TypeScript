@@ -223,7 +223,7 @@ namespace ts {
                     return String.fromCharCode(parseInt(hex, 16));
                 }
                 else {
-                    const ch = entities[word];
+                    const ch = _get(entities, word);
                     // If this is not a valid entity, then just use `match` (replace it with itself, i.e. don't replace)
                     return ch ? String.fromCharCode(ch) : match;
                 }
