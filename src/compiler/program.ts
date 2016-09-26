@@ -179,7 +179,7 @@ namespace ts {
             currentDirectory = host.getCurrentDirectory();
         }
 
-        return currentDirectory && getDefaultTypeRoots(currentDirectory, host);
+        return currentDirectory !== undefined && getDefaultTypeRoots(currentDirectory, host);
     }
 
     /**
@@ -789,22 +789,32 @@ namespace ts {
     }
 
     function loadModuleFromNodeModules(moduleName: string, directory: string, failedLookupLocations: string[], state: ModuleResolutionState): string {
+        return loadModuleFromNodeModulesWorker(moduleName, directory, failedLookupLocations, state, /*typesOnly*/ false);
+    }
+
+    function loadModuleFromNodeModulesAtTypes(moduleName: string, directory: string, failedLookupLocations: string[], state: ModuleResolutionState): string {
+        return loadModuleFromNodeModulesWorker(moduleName, directory, failedLookupLocations, state, /*typesOnly*/ true);
+    }
+
+    function loadModuleFromNodeModulesWorker(moduleName: string, directory: string, failedLookupLocations: string[], state: ModuleResolutionState, typesOnly: boolean): string {
         directory = normalizeSlashes(directory);
         while (true) {
             const baseName = getBaseFileName(directory);
             if (baseName !== "node_modules") {
-                // Try to load source from the package
-                const packageResult = loadModuleFromNodeModulesFolder(moduleName, directory, failedLookupLocations, state);
-                if (packageResult && hasTypeScriptFileExtension(packageResult)) {
-                    // Always prefer a TypeScript (.ts, .tsx, .d.ts) file shipped with the package
-                    return packageResult;
-                }
-                else {
-                    // Else prefer a types package over non-TypeScript results (e.g. JavaScript files)
-                    const typesResult = loadModuleFromNodeModulesFolder(combinePaths("@types", moduleName), directory, failedLookupLocations, state);
-                    if (typesResult || packageResult) {
-                        return typesResult || packageResult;
+                let packageResult: string | undefined;
+                if (!typesOnly) {
+                    // Try to load source from the package
+                    packageResult = loadModuleFromNodeModulesFolder(moduleName, directory, failedLookupLocations, state);
+                    if (packageResult && hasTypeScriptFileExtension(packageResult)) {
+                        // Always prefer a TypeScript (.ts, .tsx, .d.ts) file shipped with the package
+                        return packageResult;
                     }
+                }
+
+                // Else prefer a types package over non-TypeScript results (e.g. JavaScript files)
+                const typesResult = loadModuleFromNodeModulesFolder(combinePaths("@types", moduleName), directory, failedLookupLocations, state);
+                if (typesResult || packageResult) {
+                    return typesResult || packageResult;
                 }
             }
 
@@ -823,7 +833,7 @@ namespace ts {
         const state = { compilerOptions, host, traceEnabled, skipTsx: !compilerOptions.jsx };
         const failedLookupLocations: string[] = [];
         const supportedExtensions = getSupportedExtensions(compilerOptions);
-        let containingDirectory = getDirectoryPath(containingFile);
+        const containingDirectory = getDirectoryPath(containingFile);
 
         const resolvedFileName = tryLoadModuleUsingOptionalResolutionSettings(moduleName, containingDirectory, loadModuleFromFile, failedLookupLocations, supportedExtensions, state);
         if (resolvedFileName) {
@@ -832,28 +842,34 @@ namespace ts {
 
         let referencedSourceFile: string;
         if (moduleHasNonRelativeName(moduleName)) {
-            while (true) {
-                const searchName = normalizePath(combinePaths(containingDirectory, moduleName));
-                referencedSourceFile = loadModuleFromFile(searchName, supportedExtensions, failedLookupLocations, /*onlyRecordFailures*/ false, state);
-                if (referencedSourceFile) {
-                    break;
-                }
-                const parentPath = getDirectoryPath(containingDirectory);
-                if (parentPath === containingDirectory) {
-                    break;
-                }
-                containingDirectory = parentPath;
-            }
+            referencedSourceFile = loadModuleFromAncestorDirectories(moduleName, containingDirectory, supportedExtensions, failedLookupLocations, state) ||
+                // If we didn't find the file normally, look it up in @types.
+                loadModuleFromNodeModulesAtTypes(moduleName, containingDirectory, failedLookupLocations, state);
         }
         else {
             const candidate = normalizePath(combinePaths(containingDirectory, moduleName));
             referencedSourceFile = loadModuleFromFile(candidate, supportedExtensions, failedLookupLocations, /*onlyRecordFailures*/ false, state);
         }
 
-
         return referencedSourceFile
             ? { resolvedModule: { resolvedFileName: referencedSourceFile }, failedLookupLocations }
             : { resolvedModule: undefined, failedLookupLocations };
+    }
+
+    /** Climb up parent directories looking for a module. */
+    function loadModuleFromAncestorDirectories(moduleName: string, containingDirectory: string, supportedExtensions: string[], failedLookupLocations: string[], state: ModuleResolutionState): string | undefined {
+        while (true) {
+            const searchName = normalizePath(combinePaths(containingDirectory, moduleName));
+            const referencedSourceFile = loadModuleFromFile(searchName, supportedExtensions, failedLookupLocations, /*onlyRecordFailures*/ false, state);
+            if (referencedSourceFile) {
+                return referencedSourceFile;
+            }
+            const parentPath = getDirectoryPath(containingDirectory);
+            if (parentPath === containingDirectory) {
+                return undefined;
+            }
+            containingDirectory = parentPath;
+        }
     }
 
     interface OutputFingerprint {
