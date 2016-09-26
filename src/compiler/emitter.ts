@@ -2703,15 +2703,15 @@ const _super = (function (geti, seti) {
 
         function isUniqueName(name: string): boolean {
             return !resolver.hasGlobalName(name) &&
-                !hasProperty(currentFileIdentifiers, name) &&
-                !hasProperty(generatedNameSet, name);
+                !_has(currentFileIdentifiers, name) &&
+                !_has(generatedNameSet, name);
         }
 
         function isUniqueLocalName(name: string, container: Node): boolean {
             for (let node = container; isNodeDescendantOf(node, container); node = node.nextContainer) {
-                if (node.locals && hasProperty(node.locals, name)) {
+                if (node.locals && _has(node.locals, name)) {
                     // We conservatively include alias symbols to cover cases where they're emitted as locals
-                    if (node.locals[name].flags & (SymbolFlags.Value | SymbolFlags.ExportValue | SymbolFlags.Alias)) {
+                    if (_get(node.locals, name).flags & (SymbolFlags.Value | SymbolFlags.ExportValue | SymbolFlags.Alias)) {
                         return false;
                     }
                 }
@@ -2760,7 +2760,7 @@ const _super = (function (geti, seti) {
             while (true) {
                 const generatedName = baseName + i;
                 if (isUniqueName(generatedName)) {
-                    return generatedNameSet[generatedName] = generatedName;
+                    return _set(generatedNameSet, generatedName, generatedName);
                 }
                 i++;
             }

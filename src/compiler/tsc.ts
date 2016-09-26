@@ -438,7 +438,7 @@ namespace ts {
         }
 
         function cachedFileExists(fileName: string): boolean {
-            return _has(chachedExistingFiles, fileName)
+            return _has(cachedExistingFiles, fileName)
                 ? _get(cachedExistingFiles, fileName)
                 : _set(cachedExistingFiles, fileName, hostFileExists(fileName));
             //return fileName in cachedExistingFiles
@@ -735,7 +735,7 @@ namespace ts {
                 for (const key in typeMap) {
                     options.push(`'${key}'`);
                 }
-                optionsDescriptionMap[description] = options;
+                _set(optionsDescriptionMap, description, options);
             }
             else {
                 description = getDiagnosticText(option.description);
@@ -757,7 +757,7 @@ namespace ts {
         for (let i = 0; i < usageColumn.length; i++) {
             const usage = usageColumn[i];
             const description = descriptionColumn[i];
-            const kindsList = optionsDescriptionMap[description];
+            const kindsList = _get(optionsDescriptionMap, description);
             output.push(usage + makePadding(marginLength - usage.length + 2) + description + sys.newLine);
 
             if (kindsList) {

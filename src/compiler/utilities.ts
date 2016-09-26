@@ -2237,11 +2237,11 @@ namespace ts {
         }
 
         function reattachFileDiagnostics(newFile: SourceFile): void {
-            if (!hasProperty(fileDiagnostics, newFile.fileName)) {
+            if (!_has(fileDiagnostics, newFile.fileName)) {
                 return;
             }
 
-            for (const diagnostic of fileDiagnostics[newFile.fileName]) {
+            for (const diagnostic of _get(fileDiagnostics, newFile.fileName)) {
                 diagnostic.file = newFile;
             }
         }
@@ -2249,10 +2249,10 @@ namespace ts {
         function add(diagnostic: Diagnostic): void {
             let diagnostics: Diagnostic[];
             if (diagnostic.file) {
-                diagnostics = fileDiagnostics[diagnostic.file.fileName];
+                diagnostics = _get(fileDiagnostics, diagnostic.file.fileName);
                 if (!diagnostics) {
                     diagnostics = [];
-                    fileDiagnostics[diagnostic.file.fileName] = diagnostics;
+                    _set(fileDiagnostics, diagnostic.file.fileName, diagnostics);
                 }
             }
             else {
@@ -3371,13 +3371,13 @@ namespace ts {
     export function formatSyntaxKind(kind: SyntaxKind): string {
         const syntaxKindEnum = (<any>ts).SyntaxKind;
         if (syntaxKindEnum) {
-            if (syntaxKindCache[kind]) {
-                return syntaxKindCache[kind];
+            if (_hasWakka(syntaxKindCache, kind)) {
+                return _getWakka(syntaxKindCache, kind);
             }
 
             for (const name in syntaxKindEnum) {
                 if (syntaxKindEnum[name] === kind) {
-                    return syntaxKindCache[kind] = kind.toString() + " (" + name + ")";
+                    return _setWakka(syntaxKindCache, kind, kind.toString() + " (" + name + ")");
                 }
             }
         }
@@ -3555,7 +3555,7 @@ namespace ts {
                         // export { x, y }
                         for (const specifier of (<ExportDeclaration>node).exportClause.elements) {
                             const name = (specifier.propertyName || specifier.name).text;
-                            (exportSpecifiers[name] || (exportSpecifiers[name] = [])).push(specifier);
+                            (_getOrUpdate(exportSpecifiers, name, () => [])).push(specifier);
                         }
                     }
                     break;

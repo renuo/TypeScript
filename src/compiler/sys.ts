@@ -298,9 +298,12 @@ namespace ts {
                         ? undefined
                         : ts.getNormalizedAbsolutePath(relativeFileName, baseDirPath);
                     // Some applications save a working file via rename operations
-                    if ((eventName === "change" || eventName === "rename") && fileWatcherCallbacks[fileName]) {
-                        for (const fileCallback of fileWatcherCallbacks[fileName]) {
-                            fileCallback(fileName);
+                    if ((eventName === "change" || eventName === "rename")) {
+                        const callbacks = _get(fileWatcherCallbacks, fileName);
+                        if (callbacks) {
+                            for (const fileCallback of _get(fileWatcherCallbacks, fileName)) {
+                                fileCallback(fileName);
+                           }
                         }
                     }
                 }
