@@ -5,7 +5,7 @@ namespace ts {
 
     //Abstract data type pattern: export only a brand, and internally cast to 'any'. What fun!
     //NOTE: this changes the public interface. People shouldn't directly access Maps.
-    export interface Map<T> {//extends MapLike<T> {
+    export interface Map<T> extends MapLike<T> {
         __mapBrand: T; // ensure Map<string> and Map<number> are incompatible
     }
 }
@@ -283,8 +283,12 @@ namespace ts {
     export function _setWakka<T>(map: Map<T>, key: any, value: T): T {
         return _set(map, key.toString(), value);
     }
-    export function _getOrUpdate<T>(map: Map<T>, key: string, getValue: () => T): T {
-        return _has(map, key) ? _get(map, key) : _set(map, key, getValue())
+    export function _getOrUpdate<T>(map: Map<T>, key: string, getValue: (key: string) => T): T {
+        return _has(map, key) ? _get(map, key) : _set(map, key, getValue(key))
+    }
+
+    export function _copySingle<T>(dst: Map<T>, src: Map<T>, key: string) {
+        _set(dst, key, _get(src, key))
     }
 
 
