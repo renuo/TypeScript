@@ -115,6 +115,13 @@ namespace ts {
         }
     }
 
+    //neater
+    export function copyMapPropertiesFromTo<T>(source: Map<T>, target: Map<T>): void {
+        for (const key in source) {
+            _s(target, key, _g(source, key))
+        }
+    }
+
     export function assign<T1 extends MapLike<{}>, T2, T3>(t: T1, arg1: T2, arg2: T3): T1 & T2 & T3;
     export function assign<T1 extends MapLike<{}>, T2>(t: T1, arg1: T2): T1 & T2;
     export function assign<T1 extends MapLike<{}>>(t: T1, ...args: any[]): any;
@@ -271,24 +278,27 @@ namespace ts {
     export function _hasWakka(map: Map<any>, key: any): boolean {
         return _has(map, key.toString())
     }
-    export function _get<T>(map: Map<T>, key: string): T {
+    export function _g<T>(map: Map<T>, key: string): T {
         return (map as any as MapLike<T>)[key];
     }
     export function _getWakka<T>(map: Map<T>, key: any): T {
-        return _get(map, key.toString())
+        return _g(map, key.toString())
     }
-    export function _set<T>(map: Map<T>, key: string, value: T): T {
+    export function _s<T>(map: Map<T>, key: string, value: T): T {
         return (map as any as MapLike<T>)[key] = value;
     }
     export function _setWakka<T>(map: Map<T>, key: any, value: T): T {
-        return _set(map, key.toString(), value);
+        return _s(map, key.toString(), value);
     }
     export function _getOrUpdate<T>(map: Map<T>, key: string, getValue: (key: string) => T): T {
-        return _has(map, key) ? _get(map, key) : _set(map, key, getValue(key))
+        return _has(map, key) ? _g(map, key) : _s(map, key, getValue(key))
     }
 
     export function _copySingle<T>(dst: Map<T>, src: Map<T>, key: string) {
-        _set(dst, key, _get(src, key))
+        _s(dst, key, _g(src, key))
+    }
+    export function _toMapLike<T>(map: Map<T>): MapLike<T> {
+        return map as any as MapLike<T>
     }
 
 

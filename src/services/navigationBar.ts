@@ -241,9 +241,9 @@ namespace ts.NavigationBar {
                 return true;
             }
 
-            const itemsWithSameName = _get(nameToItems, name);
+            const itemsWithSameName = _g(nameToItems, name);
             if (!itemsWithSameName) {
-                _set(nameToItems, name, child);
+                _s(nameToItems, name, child);
                 return true;
             }
 
@@ -261,7 +261,7 @@ namespace ts.NavigationBar {
                 if (tryMerge(itemWithSameName, child)) {
                     return false;
                 }
-                _set(nameToItems, name, [itemWithSameName, child]);
+                _s(nameToItems, name, [itemWithSameName, child]);
                 return true;
             }
 

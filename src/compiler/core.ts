@@ -32,18 +32,18 @@ namespace ts {
         };
 
         function forEachValueInMap(f: (key: Path, value: T) => void) {
-            for (const key in files) {
+            for (const key in files) { //TODO: foreach
                 f(<Path>key, files[key]);
             }
         }
 
         // path should already be well-formed so it does not need to be normalized
         function get(path: Path): T {
-            return files[toKey(path)];
+            return _g(files, toKey(path));
         }
 
         function set(path: Path, value: T) {
-            files[toKey(path)] = value;
+            _s(files, toKey(path), value);
         }
 
         function contains(path: Path) {
@@ -578,7 +578,7 @@ namespace ts {
     export let localizedDiagnosticMessages: Map<string> = undefined;
 
     export function getLocaleSpecificMessage(message: DiagnosticMessage) {
-        return localizedDiagnosticMessages && localizedDiagnosticMessages[message.key] || message.message;
+        return localizedDiagnosticMessages && _g(localizedDiagnosticMessages, message.key) || message.message;
     }
 
     export function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage, ...args: any[]): Diagnostic;

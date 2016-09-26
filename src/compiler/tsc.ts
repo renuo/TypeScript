@@ -439,8 +439,8 @@ namespace ts {
 
         function cachedFileExists(fileName: string): boolean {
             return _has(cachedExistingFiles, fileName)
-                ? _get(cachedExistingFiles, fileName)
-                : _set(cachedExistingFiles, fileName, hostFileExists(fileName));
+                ? _g(cachedExistingFiles, fileName)
+                : _s(cachedExistingFiles, fileName, hostFileExists(fileName));
             //return fileName in cachedExistingFiles
             //     ? cachedExistingFiles[fileName]
             //    : cachedExistingFiles[fileName] = hostFileExists(fileName);
@@ -735,7 +735,7 @@ namespace ts {
                 for (const key in typeMap) {
                     options.push(`'${key}'`);
                 }
-                _set(optionsDescriptionMap, description, options);
+                _s(optionsDescriptionMap, description, options);
             }
             else {
                 description = getDiagnosticText(option.description);
@@ -757,7 +757,7 @@ namespace ts {
         for (let i = 0; i < usageColumn.length; i++) {
             const usage = usageColumn[i];
             const description = descriptionColumn[i];
-            const kindsList = _get(optionsDescriptionMap, description);
+            const kindsList = _g(optionsDescriptionMap, description);
             output.push(usage + makePadding(marginLength - usage.length + 2) + description + sys.newLine);
 
             if (kindsList) {

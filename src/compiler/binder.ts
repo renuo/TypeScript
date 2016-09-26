@@ -335,14 +335,14 @@ namespace ts {
                 symbol = _getOrUpdate(symbolTable, name, name => createSymbol(SymbolFlags.None, name));
 
                 if (name && (includes & SymbolFlags.Classifiable)) {
-                    _set(classifiableNames, name, name);
+                    _s(classifiableNames, name, name);
                 }
 
                 if (symbol.flags & excludes) {
                     if (symbol.isReplaceableByMethod) {
                         // Javascript constructor-declared symbols can be discarded in favor of
                         // prototype symbols like methods.
-                        symbol = _set(symbolTable, name, createSymbol(SymbolFlags.None, name));
+                        symbol = _s(symbolTable, name, createSymbol(SymbolFlags.None, name));
                     }
                     else {
                         if (node.name) {
@@ -1444,7 +1444,7 @@ namespace ts {
             const typeLiteralSymbol = createSymbol(SymbolFlags.TypeLiteral, "__type");
             addDeclarationToSymbol(typeLiteralSymbol, node, SymbolFlags.TypeLiteral);
             typeLiteralSymbol.members = createMap<Symbol>();
-            _set(typeLiteralSymbol.members, symbol.name, symbol);
+            _s(typeLiteralSymbol.members, symbol.name, symbol);
         }
 
         function bindObjectLiteralExpression(node: ObjectLiteralExpression) {
@@ -1475,9 +1475,9 @@ namespace ts {
                         ? ElementKind.Property
                         : ElementKind.Accessor;
 
-                    const existingKind = _get(seen, identifier.text);
+                    const existingKind = _g(seen, identifier.text);
                     if (!existingKind) {
-                        _set(seen, identifier.text, currentKind);
+                        _s(seen, identifier.text, currentKind);
                         continue;
                     }
 
@@ -2049,7 +2049,7 @@ namespace ts {
             constructorFunction.parent = classPrototype;
             classPrototype.parent = leftSideOfAssignment;
 
-            const funcSymbol = _get(container.locals, constructorFunction.text);
+            const funcSymbol = _g(container.locals, constructorFunction.text);
             if (!funcSymbol || !(funcSymbol.flags & SymbolFlags.Function || isDeclarationOfFunctionExpression(funcSymbol))) {
                 return;
             }
@@ -2089,7 +2089,7 @@ namespace ts {
                 bindAnonymousDeclaration(node, SymbolFlags.Class, bindingName);
                 // Add name of class expression into the map for semantic classifier
                 if (node.name) {
-                    classifiableNames[node.name.text] = node.name.text;
+                    _s(classifiableNames, node.name.text, node.name.text);
                 }
             }
 
@@ -2105,14 +2105,15 @@ namespace ts {
             // module might have an exported variable called 'prototype'.  We can't allow that as
             // that would clash with the built-in 'prototype' for the class.
             const prototypeSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Prototype, "prototype");
-            if (symbol.exports[prototypeSymbol.name]) {
+            const symbolExport = _g(symbol.exports, prototypeSymbol.name)
+            if (symbolExport) {
                 if (node.name) {
                     node.name.parent = node;
                 }
-                file.bindDiagnostics.push(createDiagnosticForNode(symbol.exports[prototypeSymbol.name].declarations[0],
+                file.bindDiagnostics.push(createDiagnosticForNode(symbolExport.declarations[0],
                     Diagnostics.Duplicate_identifier_0, prototypeSymbol.name));
             }
-            symbol.exports[prototypeSymbol.name] = prototypeSymbol;
+            _s(symbol.exports, prototypeSymbol.name, prototypeSymbol);
             prototypeSymbol.parent = symbol;
         }
 

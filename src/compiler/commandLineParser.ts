@@ -492,9 +492,9 @@ namespace ts {
         const optionNameMap = createMap<CommandLineOption>();
         const shortOptionNames = createMap<string>();
         forEach(optionDeclarations, option => {
-            optionNameMap[option.name.toLowerCase()] = option;
+            _s(optionNameMap, option.name.toLowerCase(), option);
             if (option.shortName) {
-                shortOptionNames[option.shortName] = option.name;
+                _s(shortOptionNames, option.shortName, option.name);
             }
         });
 
@@ -516,7 +516,7 @@ namespace ts {
         const key = trimString((value || "")).toLowerCase();
         const map = opt.type;
         if (key in map) {
-            return map[key];
+            return _g(map, key);
         }
         else {
             errors.push(createCompilerDiagnosticForInvalidCustomType(opt));
@@ -570,11 +570,11 @@ namespace ts {
 
                     // Try to translate short option names to their full equivalents.
                     if (s in shortOptionNames) {
-                        s = shortOptionNames[s];
+                        s = _g(shortOptionNames, s);
                     }
 
                     if (s in optionNameMap) {
-                        const opt = optionNameMap[s];
+                        const opt = _g(optionNameMap, s);
 
                         if (opt.isTSConfigOnly) {
                             errors.push(createCompilerDiagnostic(Diagnostics.Option_0_can_only_be_specified_in_tsconfig_json_file, opt.name));
@@ -717,10 +717,11 @@ namespace ts {
             }
         }
 
-        function getNameOfCompilerOptionValue(value: CompilerOptionsValue, customTypeMap: MapLike<string | number>): string | undefined {
+        //Changed this from MapLike to Map, because it's only used with Maps
+        function getNameOfCompilerOptionValue(value: CompilerOptionsValue, customTypeMap: Map<string | number>): string | undefined {
             // There is a typeMap associated with this command-line option so use it to map value back to its name
             for (const key in customTypeMap) {
-                if (customTypeMap[key] === value) {
+                if (_g(customTypeMap, key) === value) {
                     return key;
                 }
             }
@@ -744,13 +745,13 @@ namespace ts {
                             break;
                         default:
                             const value = options[name];
-                            let optionDefinition = optionsNameMap[name.toLowerCase()];
+                            let optionDefinition = _g(optionsNameMap, name.toLowerCase());
                             if (optionDefinition) {
                                 const customTypeMap = getCustomTypeMapOfCommandLineOption(optionDefinition);
                                 if (!customTypeMap) {
                                     // There is no map associated with this compiler option then use the value as-is
                                     // This is the case if the value is expect to be string, number, boolean or list of string
-                                    result[name] = value;
+                                    _s(result, name, value);
                                 }
                                 else {
                                     if (optionDefinition.type === "list") {
@@ -758,11 +759,11 @@ namespace ts {
                                         for (const element of value as (string | number)[]) {
                                             convertedValue.push(getNameOfCompilerOptionValue(element, customTypeMap));
                                         }
-                                        result[name] = convertedValue;
+                                        _s(result, name, convertedValue);
                                     }
                                     else {
                                         // There is a typeMap associated with this command-line option so use it to map value back to its name
-                                        result[name] = getNameOfCompilerOptionValue(value, customTypeMap);
+                                        _s(result, name, getNameOfCompilerOptionValue(value, customTypeMap));
                                     }
                                 }
                             }
@@ -983,7 +984,7 @@ namespace ts {
 
         for (const id in jsonOptions) {
             if (id in optionNameMap) {
-                const opt = optionNameMap[id];
+                const opt = _g(optionNameMap, id);
                 defaultOptions[opt.name] = convertJsonOption(opt, jsonOptions[id], basePath, errors);
             }
             else {
@@ -1020,7 +1021,7 @@ namespace ts {
     function convertJsonOptionOfCustomType(opt: CommandLineOptionOfCustomType, value: string, errors: Diagnostic[]) {
         const key = value.toLowerCase();
         if (key in opt.type) {
-            return opt.type[key];
+            return _g(opt.type, key);
         }
         else {
             errors.push(createCompilerDiagnosticForInvalidCustomType(opt));
@@ -1159,7 +1160,7 @@ namespace ts {
         if (fileNames) {
             for (const fileName of fileNames) {
                 const file = combinePaths(basePath, fileName);
-                literalFileMap[keyMapper(file)] = file;
+                _s(literalFileMap, keyMapper(file), file);
             }
         }
 
@@ -1183,7 +1184,7 @@ namespace ts {
 
                 const key = keyMapper(file);
                 if (!(key in literalFileMap) && !(key in wildcardFileMap)) {
-                    wildcardFileMap[key] = file;
+                    _s(wildcardFileMap, key, file);
                 }
             }
         }
@@ -1193,7 +1194,7 @@ namespace ts {
         wildcardFiles.sort(host.useCaseSensitiveFileNames ? compareStrings : compareStringsCaseInsensitive);
         return {
             fileNames: literalFiles.concat(wildcardFiles),
-            wildcardDirectories
+            wildcardDirectories: _toMapLike(wildcardDirectories)
         };
     }
 
@@ -1247,9 +1248,9 @@ namespace ts {
                 if (match) {
                     const key = useCaseSensitiveFileNames ? match[0] : match[0].toLowerCase();
                     const flags = watchRecursivePattern.test(name) ? WatchDirectoryFlags.Recursive : WatchDirectoryFlags.None;
-                    const existingFlags = wildcardDirectories[key];
+                    const existingFlags = _g(wildcardDirectories, key);
                     if (existingFlags === undefined || existingFlags < flags) {
-                        wildcardDirectories[key] = flags;
+                        _s(wildcardDirectories, key, flags);
                         if (flags === WatchDirectoryFlags.Recursive) {
                             recursiveKeys.push(key);
                         }

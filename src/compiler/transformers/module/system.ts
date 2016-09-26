@@ -1332,12 +1332,12 @@ namespace ts {
                 const text = externalModuleName.text;
                 if (_has(groupIndices, text)) {
                     // deduplicate/group entries in dependency list by the dependency name
-                    const groupIndex = _get(groupIndices, text);
+                    const groupIndex = _g(groupIndices, text);
                     dependencyGroups[groupIndex].externalImports.push(externalImport);
                     continue;
                 }
                 else {
-                    _set(groupIndices, text, dependencyGroups.length);
+                    _s(groupIndices, text, dependencyGroups.length);
                     dependencyGroups.push({
                         name: externalModuleName,
                         externalImports: [externalImport]

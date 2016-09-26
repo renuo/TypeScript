@@ -2241,7 +2241,7 @@ namespace ts {
                 return;
             }
 
-            for (const diagnostic of _get(fileDiagnostics, newFile.fileName)) {
+            for (const diagnostic of _g(fileDiagnostics, newFile.fileName)) {
                 diagnostic.file = newFile;
             }
         }
@@ -2249,10 +2249,10 @@ namespace ts {
         function add(diagnostic: Diagnostic): void {
             let diagnostics: Diagnostic[];
             if (diagnostic.file) {
-                diagnostics = _get(fileDiagnostics, diagnostic.file.fileName);
+                diagnostics = _g(fileDiagnostics, diagnostic.file.fileName);
                 if (!diagnostics) {
                     diagnostics = [];
-                    _set(fileDiagnostics, diagnostic.file.fileName, diagnostics);
+                    _s(fileDiagnostics, diagnostic.file.fileName, diagnostics);
                 }
             }
             else {

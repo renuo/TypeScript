@@ -2711,7 +2711,7 @@ const _super = (function (geti, seti) {
             for (let node = container; isNodeDescendantOf(node, container); node = node.nextContainer) {
                 if (node.locals && _has(node.locals, name)) {
                     // We conservatively include alias symbols to cover cases where they're emitted as locals
-                    if (_get(node.locals, name).flags & (SymbolFlags.Value | SymbolFlags.ExportValue | SymbolFlags.Alias)) {
+                    if (_g(node.locals, name).flags & (SymbolFlags.Value | SymbolFlags.ExportValue | SymbolFlags.Alias)) {
                         return false;
                     }
                 }
@@ -2760,7 +2760,7 @@ const _super = (function (geti, seti) {
             while (true) {
                 const generatedName = baseName + i;
                 if (isUniqueName(generatedName)) {
-                    return _set(generatedNameSet, generatedName, generatedName);
+                    return _s(generatedNameSet, generatedName, generatedName);
                 }
                 i++;
             }

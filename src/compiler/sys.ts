@@ -246,7 +246,7 @@ namespace ts {
 
                 function reduceDirWatcherRefCountForFile(fileName: string) {
                     const dirName = getDirectoryPath(fileName);
-                    const watcher = _get(dirWatchers, dirName);
+                    const watcher = _g(dirWatchers, dirName);
                     if (watcher) {
                         watcher.referenceCount -= 1;
                         if (watcher.referenceCount <= 0) {
@@ -257,7 +257,7 @@ namespace ts {
                 }
 
                 function addDirWatcher(dirPath: string): void {
-                    let watcher = _get(dirWatchers, dirPath);
+                    let watcher = _g(dirWatchers, dirPath);
                     if (watcher) {
                         watcher.referenceCount += 1;
                         return;
@@ -268,7 +268,7 @@ namespace ts {
                         (eventName: string, relativeFileName: string) => fileEventHandler(eventName, relativeFileName, dirPath)
                     );
                     watcher.referenceCount = 1;
-                    _set(dirWatchers, dirPath, watcher);
+                    _s(dirWatchers, dirPath, watcher);
                     return;
                 }
 
@@ -299,9 +299,9 @@ namespace ts {
                         : ts.getNormalizedAbsolutePath(relativeFileName, baseDirPath);
                     // Some applications save a working file via rename operations
                     if ((eventName === "change" || eventName === "rename")) {
-                        const callbacks = _get(fileWatcherCallbacks, fileName);
+                        const callbacks = _g(fileWatcherCallbacks, fileName);
                         if (callbacks) {
-                            for (const fileCallback of _get(fileWatcherCallbacks, fileName)) {
+                            for (const fileCallback of _g(fileWatcherCallbacks, fileName)) {
                                 fileCallback(fileName);
                            }
                         }
